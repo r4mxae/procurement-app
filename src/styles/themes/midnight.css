@@ -1,0 +1,21 @@
+/* Midnight theme — indigo background with rose accent. */
+    [data-theme="midnight"] {
+      --bg: #0d0d1c;
+      --surface: #16162a;
+      --surface-2: #1f1f38;
+      --surface-3: #2a2a48;
+      --border: #2f2f4d;
+      --border-strong: #404064;
+      --text: #ebebf5;
+      --text-muted: #9999b8;
+      --text-faint: #555575;
+      --accent: #e8889a;
+      --accent-2: #f29eaf;
+      --accent-soft: rgba(232, 136, 154, 0.13);
+      --accent-glow: rgba(232, 136, 154, 0.3);
+      --success: #7ec0a0;
+      --warning: #e8c97e;
+      --danger: #d97878;
+      --info: #8fb4e0;
+      --grid: rgba(255,255,255,0.04);
+    }

@@ -1,0 +1,21 @@
+/* Porcelain theme — cream background with teal accent. Light mode. */
+    [data-theme="porcelain"] {
+      --bg: #faf7f0;
+      --surface: #ffffff;
+      --surface-2: #f4f0e6;
+      --surface-3: #ebe6d7;
+      --border: #e2dccc;
+      --border-strong: #c8c0aa;
+      --text: #1f1d17;
+      --text-muted: #6a655a;
+      --text-faint: #a39e91;
+      --accent: #2a7e76;
+      --accent-2: #1f6862;
+      --accent-soft: rgba(42, 126, 118, 0.1);
+      --accent-glow: rgba(42, 126, 118, 0.18);
+      --success: #4a8b62;
+      --warning: #c89554;
+      --danger: #b85e5e;
+      --info: #4a7eb8;
+      --grid: rgba(0,0,0,0.05);
+    }

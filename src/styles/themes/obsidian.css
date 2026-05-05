@@ -1,0 +1,21 @@
+/* Obsidian theme — charcoal background with amber accent. The default. */
+    [data-theme="obsidian"] {
+      --bg: #0a0a0d;
+      --surface: #131318;
+      --surface-2: #1c1c24;
+      --surface-3: #272730;
+      --border: #2a2a35;
+      --border-strong: #3a3a48;
+      --text: #ecebe7;
+      --text-muted: #95918a;
+      --text-faint: #5a574f;
+      --accent: #d4a574;
+      --accent-2: #e6b78a;
+      --accent-soft: rgba(212, 165, 116, 0.14);
+      --accent-glow: rgba(212, 165, 116, 0.3);
+      --success: #7eb886;
+      --warning: #e0b66f;
+      --danger: #c97a7a;
+      --info: #7ba7c4;
+      --grid: rgba(255,255,255,0.04);
+    }

@@ -1,0 +1,383 @@
+/* Procurement Dashboard — base stylesheet.
+   Theme-specific CSS variables live in /styles/themes/*.css and are
+   selected via the data-theme attribute on the document root.  */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    .pd-root {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    .pd-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.02em; }
+    .pd-mono { font-family: 'JetBrains Mono', monospace; font-feature-settings: 'tnum'; }
+
+    /* ─── ACCESSIBILITY: TEXT SCALING ─────────────────────────────── */
+    /* Large = +15% scale, XL = +30% scale */
+    .pd-text-large .text-\[10px\] { font-size: 12px !important; }
+    .pd-text-large .text-\[11px\] { font-size: 13px !important; }
+    .pd-text-large .text-xs { font-size: 14px !important; }
+    .pd-text-large .text-sm { font-size: 16px !important; }
+    .pd-text-large .text-base { font-size: 18px !important; }
+    .pd-text-large .text-lg { font-size: 21px !important; }
+    .pd-text-large .text-xl { font-size: 23px !important; }
+    .pd-text-large .text-2xl { font-size: 28px !important; }
+    .pd-text-large .text-3xl { font-size: 34px !important; }
+    .pd-text-large .text-4xl { font-size: 41px !important; }
+
+    .pd-text-xl .text-\[10px\] { font-size: 13px !important; }
+    .pd-text-xl .text-\[11px\] { font-size: 14px !important; }
+    .pd-text-xl .text-xs { font-size: 15px !important; }
+    .pd-text-xl .text-sm { font-size: 17px !important; }
+    .pd-text-xl .text-base { font-size: 20px !important; }
+    .pd-text-xl .text-lg { font-size: 23px !important; }
+    .pd-text-xl .text-xl { font-size: 26px !important; }
+    .pd-text-xl .text-2xl { font-size: 31px !important; }
+    .pd-text-xl .text-3xl { font-size: 38px !important; }
+    .pd-text-xl .text-4xl { font-size: 46px !important; }
+
+    /* ─── ACCESSIBILITY: BOLD TEXT ────────────────────────────────── */
+    /* Shifts every weight class one step heavier for readability */
+    .pd-text-bold { font-weight: 500; }
+    .pd-text-bold .font-light { font-weight: 400 !important; }
+    .pd-text-bold .font-normal { font-weight: 500 !important; }
+    .pd-text-bold .font-medium { font-weight: 600 !important; }
+    .pd-text-bold .font-semibold { font-weight: 700 !important; }
+    .pd-text-bold .font-bold { font-weight: 800 !important; }
+    .pd-text-bold .pd-display { font-weight: 600 !important; }
+    .pd-text-bold .pd-mono { font-weight: 500 !important; }
+    /* Help muted text stay legible when bolded */
+    .pd-text-bold [style*="text-muted"],
+    .pd-text-bold [style*="text-faint"] { font-weight: 500 !important; }
+
+    /* ─── RESPONSIVE: MOBILE DRAWER + TOUCH TARGETS ───────────────── */
+    .pd-mobile-topbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 35;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      align-items: center;
+      gap: 12px;
+    }
+    .pd-mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 45;
+      animation: pd-fade 0.2s ease;
+    }
+
+    @media (max-width: 767px) {
+      .pd-mobile-topbar { display: flex; }
+      .pd-sidebar-host {
+        position: fixed !important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 50;
+        width: 280px !important;
+        min-width: 280px !important;
+        transform: translate3d(-100%, 0, 0);
+        transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+      }
+      .pd-sidebar-host.pd-sidebar-mobile-open {
+        transform: translate3d(0, 0, 0);
+      }
+      .pd-mobile-backdrop.show { display: block; }
+
+      /* Bigger tap targets on mobile */
+      .pd-icon-btn { width: 40px; height: 40px; }
+      .pd-timer-btn { height: 40px; padding: 0 14px; font-size: 13px; }
+      .pd-input { font-size: 16px; /* prevents iOS zoom on focus */ }
+      .pd-nav-item { padding-top: 12px !important; padding-bottom: 12px !important; }
+
+      /* Active timer banner: tighter, stacked */
+      .pd-active-timer-banner {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        gap: 10px !important;
+      }
+      .pd-active-timer-banner .pd-atb-label,
+      .pd-active-timer-banner .pd-atb-kind,
+      .pd-active-timer-banner .pd-atb-view-btn { display: none; }
+
+      /* Page header: stack title and primary action */
+      .pd-page-header { flex-direction: column; align-items: stretch !important; }
+      .pd-page-header > :last-child { width: 100%; }
+      .pd-page-header > :last-child > button { width: 100%; justify-content: center; }
+    }
+    @media (min-width: 768px) {
+      .pd-mobile-backdrop { display: none !important; }
+    }
+
+    .pd-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      transform: translateZ(0);
+      transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease;
+      will-change: transform;
+    }
+    .pd-card-hover { position: relative; }
+    .pd-card-hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 18px 40px -12px rgba(0,0,0,0.35), 0 0 0 1px var(--accent-soft);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .pd-card-hover:hover {
+      transform: translate3d(0, -3px, 0);
+      border-color: var(--border-strong);
+    }
+    .pd-card-hover:hover::after { opacity: 1; }
+
+    .pd-stat-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transform: translateZ(0);
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s ease;
+      will-change: transform;
+    }
+    .pd-stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, var(--accent-soft) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .pd-stat-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 20px 48px -16px rgba(0,0,0,0.4), 0 0 0 1px var(--accent-soft);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .pd-stat-card:hover {
+      transform: translate3d(0, -4px, 0);
+      border-color: var(--accent);
+    }
+    .pd-stat-card:hover::after { opacity: 1; }
+    .pd-stat-card:hover::before { opacity: 1; }
+
+    .pd-btn {
+      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+    }
+    .pd-btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 4px 14px -4px var(--accent-glow);
+    }
+    .pd-btn-primary:hover {
+      background: var(--accent-2);
+      transform: translate3d(0, -1px, 0);
+    }
+    .pd-btn-primary:active { transform: translate3d(0, 0, 0); }
+
+    .pd-btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .pd-btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: var(--surface-2);
+    }
+
+    .pd-input {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      font-family: inherit;
+    }
+    .pd-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: var(--surface);
+    }
+    .pd-input::placeholder { color: var(--text-faint); }
+
+    .pd-nav-item {
+      position: relative;
+      transition: background 0.18s ease, color 0.18s ease;
+      cursor: pointer;
+    }
+    .pd-nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: scaleY(0);
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .pd-nav-item:hover { background: var(--surface-2); color: var(--text); }
+    .pd-nav-item:hover::before { transform: scaleY(0.5); }
+    .pd-nav-item.active { background: var(--accent-soft); color: var(--text); }
+    .pd-nav-item.active::before { transform: scaleY(1); }
+
+    .pd-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+    }
+    .pd-pill-dot { width: 6px; height: 6px; border-radius: 999px; }
+
+    .pd-row {
+      transition: background 0.15s ease;
+    }
+    .pd-row:hover { background: var(--surface-2); }
+
+    .pd-divider { height: 1px; background: var(--border); }
+
+    .pd-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+    .pd-icon-btn:hover {
+      color: var(--text);
+      background: var(--surface-2);
+      border-color: var(--border);
+    }
+    .pd-icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+    .pd-progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .pd-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .pd-modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      animation: pd-fade 0.18s ease;
+    }
+    .pd-modal {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      width: min(560px, 92vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+      animation: pd-scale 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform: translateZ(0);
+    }
+
+    @keyframes pd-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pd-scale { from { opacity: 0; transform: scale(0.96) translate3d(0, 8px, 0); } to { opacity: 1; transform: scale(1) translate3d(0, 0, 0); } }
+    @keyframes pd-slide-up { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+    @keyframes pd-pulse-soft { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
+    @keyframes pd-tick-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .pd-anim-in { animation: pd-slide-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+    .pd-tick-dot { animation: pd-tick-dot 1s ease-in-out infinite; }
+
+    .pd-timer-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px;
+      padding: 0 12px;
+      height: 32px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .pd-timer-btn:hover:not(:disabled) {
+      color: var(--text);
+      background: var(--surface-3);
+      border-color: var(--border-strong);
+    }
+    .pd-timer-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pd-timer-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      animation: pd-pulse-soft 1.6s ease-in-out infinite;
+    }
+    .pd-timer-btn.active:hover { background: var(--accent-2); }
+
+    .pd-bg-grid {
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .pd-glow-text {
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .pd-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .pd-scroll::-webkit-scrollbar-track { background: transparent; }
+    .pd-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .pd-scroll::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+    select.pd-input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%), linear-gradient(135deg, var(--text-muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+
+    .pd-priority-critical { color: var(--danger); }
+    .pd-priority-high { color: var(--warning); }
+    .pd-priority-medium { color: var(--info); }
+    .pd-priority-low { color: var(--text-muted); }

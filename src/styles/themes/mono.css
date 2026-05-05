@@ -1,0 +1,94 @@
+/* Mono theme — high-contrast minimalist palette on white. */
+/* Variable definitions: */
+    [data-theme="mono"] {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #f5f5f5;
+      --surface-3: #e8e8e8;
+      --border: #c8c8c8;
+      --border-strong: #000000;
+      --text: #000000;
+      --text-muted: #2a2a2a;
+      --text-faint: #525252;
+      --accent: #000000;
+      --accent-2: #1a1a1a;
+      --accent-soft: rgba(0, 0, 0, 0.06);
+      --accent-glow: rgba(0, 0, 0, 0.18);
+      --success: #00603a;
+      --warning: #8a5300;
+      --danger: #9c1f1f;
+      --info: #1a4da8;
+      --grid: rgba(0,0,0,0.05);
+    }
+
+/* Component overrides shared by Mono and Mono Dark.
+   These are duplicated as combined selectors so each theme can be
+   loaded independently. */
+    [data-theme="mono"] .pd-card,
+    [data-theme="mono-dark"] .pd-card {
+      box-shadow: none;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    [data-theme="mono"] .pd-card-hover:hover,
+    [data-theme="mono-dark"] .pd-card-hover:hover {
+      transform: none;
+      box-shadow: none;
+      border-color: var(--accent);
+      background: var(--surface-2);
+    }
+    [data-theme="mono"] .pd-card-hover::after,
+    [data-theme="mono-dark"] .pd-card-hover::after {
+      display: none;
+    }
+    [data-theme="mono"] .pd-modal,
+    [data-theme="mono-dark"] .pd-modal {
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px var(--border-strong);
+    }
+    [data-theme="mono"] .pd-progress-fill,
+    [data-theme="mono-dark"] .pd-progress-fill {
+      background: var(--accent);
+    }
+    [data-theme="mono"] .pd-display,
+    [data-theme="mono-dark"] .pd-display {
+      letter-spacing: -0.01em;
+    }
+    [data-theme="mono"] .pd-pill,
+    [data-theme="mono-dark"] .pd-pill {
+      border-radius: 4px;
+      border-width: 1.5px;
+    }
+    [data-theme="mono"] .pd-input,
+    [data-theme="mono-dark"] .pd-input {
+      border-radius: 6px;
+      border-width: 1.5px;
+    }
+    [data-theme="mono"] .pd-input:focus,
+    [data-theme="mono-dark"] .pd-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    [data-theme="mono"] .pd-btn-primary,
+    [data-theme="mono-dark"] .pd-btn-primary {
+      border-radius: 6px;
+      box-shadow: none;
+    }
+    [data-theme="mono"] .pd-btn-ghost,
+    [data-theme="mono-dark"] .pd-btn-ghost {
+      border-radius: 6px;
+    }
+    [data-theme="mono"] .pd-icon-btn,
+    [data-theme="mono-dark"] .pd-icon-btn {
+      border-radius: 4px;
+    }
+    [data-theme="mono"] .pd-timer-btn,
+    [data-theme="mono-dark"] .pd-timer-btn {
+      border-radius: 4px;
+      border-width: 1.5px;
+    }
+    [data-theme="mono"] .pd-timer-btn.active,
+    [data-theme="mono-dark"] .pd-timer-btn.active {
+      animation: none;
+      box-shadow: none;
+    }

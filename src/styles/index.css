@@ -1,0 +1,17 @@
+/* Top-level stylesheet — imports the base layer and every theme. */
+
+/* CSS @import rules must come first; @tailwind directives follow. */
+@import './base.css';
+
+/* Themes — each scoped under its [data-theme="..."] selector. */
+@import './themes/obsidian.css';
+@import './themes/porcelain.css';
+@import './themes/midnight.css';
+@import './themes/forest.css';
+@import './themes/mono.css';
+@import './themes/mono-dark.css';
+
+/* Tailwind utilities (used directly in component classNames). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,0 +1,21 @@
+/* Forest theme — pine background with copper accent. */
+    [data-theme="forest"] {
+      --bg: #0a1410;
+      --surface: #121e18;
+      --surface-2: #1a2a21;
+      --surface-3: #23362b;
+      --border: #2a3f33;
+      --border-strong: #3a5343;
+      --text: #e8ede8;
+      --text-muted: #8fa896;
+      --text-faint: #56695c;
+      --accent: #d4946b;
+      --accent-2: #e3a682;
+      --accent-soft: rgba(212, 148, 107, 0.12);
+      --accent-glow: rgba(212, 148, 107, 0.28);
+      --success: #82bd8c;
+      --warning: #e0b66f;
+      --danger: #c97a7a;
+      --info: #7ba7c4;
+      --grid: rgba(255,255,255,0.04);
+    }
