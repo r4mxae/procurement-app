@@ -1,5 +1,5 @@
 import { Calendar, ClipboardList, FileText, History, Paperclip, Timer } from 'lucide-react';
-import { TASK_STATUSES, TENDER_STAGES } from '../../constants/domain';
+import { SLA_TYPES, TASK_STATUSES, TENDER_STAGES } from '../../constants/domain';
 import { daysUntil, fmtDateShort, fmtDuration, totalLoggedSeconds, getUrgentDays } from '../../lib/format';
 import { LiveDuration } from '../common/LiveDuration';
 import { PriorityBadge } from '../common/PriorityBadge';
@@ -12,6 +12,7 @@ export function WorkRow({ item, index, isActiveTimer, activeStartTime, hasOtherT
   const baseSeconds = totalLoggedSeconds(item.workLogs);
   const logCount = (item.workLogs || []).length;
   const attachmentCount = (item.attachments || []).length;
+  const slaLabel = item.slaType ? SLA_TYPES.find(t => t.id === item.slaType)?.label : null;
   const showTimeChip = baseSeconds > 0 || isActiveTimer;
 
   const statusLabel = item.kind === 'task'
@@ -60,6 +61,15 @@ export function WorkRow({ item, index, isActiveTimer, activeStartTime, hasOtherT
                 {fmtDateShort(item.deadline)}
                 {days != null && item._open && (
                   <span>· {days < 0 ? `${Math.abs(days)}d late` : days === 0 ? 'today' : `${days}d`}</span>
+                )}
+                {slaLabel && (
+                  <span
+                    className="px-1.5 py-0.5 rounded uppercase tracking-wider"
+                    style={{ background: 'var(--surface-3)', color: 'var(--text-muted)', fontSize: 9, marginLeft: 4 }}
+                    title={`SLA: ${slaLabel}${item.slaDays ? ` (${item.slaDays} working days)` : ''}`}
+                  >
+                    {slaLabel}
+                  </span>
                 )}
               </span>
             )}

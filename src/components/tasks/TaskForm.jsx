@@ -2,15 +2,32 @@ import React, { useState } from 'react';
 import { Save } from 'lucide-react';
 import { PRIORITIES, TASK_CATEGORIES, TASK_STATUSES } from '../../constants/domain';
 import { Field } from '../common/Field';
+import { SlaPicker } from '../common/SlaPicker';
+import { addWorkingDays, todayISO } from '../../lib/format';
 
 export function TaskForm({ initial, settings, onSubmit, onCancel }) {
   const allCategories = [...TASK_CATEGORIES, ...(settings?.customTaskCategories || [])];
   const defaultPriority = settings?.defaultTaskPriority || 'medium';
-  const [form, setForm] = useState(initial || { title: '', description: '', status: 'todo', priority: defaultPriority, category: allCategories[0] || 'Other', deadline: '' });
+  const [form, setForm] = useState(initial || {
+    title: '', description: '', status: 'todo',
+    priority: defaultPriority,
+    category: allCategories[0] || 'Other',
+    slaType: null, slaDays: null, deadline: '',
+  });
 
   const submit = () => {
     if (!form.title.trim()) return;
-    onSubmit(form);
+    // Compute deadline at save time from SLA, falling back to whatever was
+    // already on the row (e.g. legacy items still using a hand-picked date).
+    const start = form.createdAt ? form.createdAt.slice(0, 10) : todayISO();
+    const deadline = form.slaDays
+      ? addWorkingDays(start, form.slaDays, settings?.workWeek)
+      : (form.deadline || null);
+    onSubmit({
+      ...form,
+      slaDays: form.slaDays ? Number(form.slaDays) : null,
+      deadline,
+    });
   };
 
   return (
@@ -37,9 +54,14 @@ export function TaskForm({ initial, settings, onSubmit, onCancel }) {
             {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </Field>
-        <Field label="Deadline">
-          <input type="date" className="pd-input rounded-lg px-3 py-2 text-sm w-full" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
-        </Field>
+        <SlaPicker
+          slaType={form.slaType}
+          slaDays={form.slaDays}
+          onChange={(p) => setForm({ ...form, ...p })}
+          slaPresets={settings?.slaPresets}
+          workWeek={settings?.workWeek}
+          startISO={form.createdAt ? form.createdAt.slice(0, 10) : todayISO()}
+        />
       </div>
       <div className="flex justify-end gap-2 mt-4">
         <button className="pd-btn pd-btn-ghost px-4 py-2 rounded-lg text-sm" onClick={onCancel}>Cancel</button>

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Activity, Check, Database, Download, Eye, Globe, Layers, Palette, RotateCcw, Save, Settings, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react';
+import { Activity, CalendarDays, Check, Database, Download, Eye, Globe, Layers, Palette, RotateCcw, Save, Settings, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react';
 import { Field } from '../components/common/Field';
 import { PageHeader } from '../components/common/PageHeader';
 import { TargetEditorBody } from '../components/modals/TargetEditorBody';
 import { DataAction } from '../components/settings/DataAction';
 import { DataStat } from '../components/settings/DataStat';
 import { SettingsSection } from '../components/settings/SettingsSection';
-import { PRIORITIES, SAVINGS_CATEGORIES, TASK_CATEGORIES } from '../constants/domain';
+import { DEFAULT_SLA_PRESETS, DEFAULT_WORK_WEEK, PRIORITIES, SAVINGS_CATEGORIES, SLA_TYPES, TASK_CATEGORIES, WEEKDAYS } from '../constants/domain';
 import { ACCENT_PRESETS, CURRENCIES, DATE_FORMATS, THEMES } from '../constants/locale';
 import { fmtDate, fmtMoneyExact, todayISO } from '../lib/format';
 
@@ -359,6 +359,76 @@ function SettingsView({ data, theme, setTheme, updateProfile, updateSettings, re
               {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           </Field>
+        </div>
+      </SettingsSection>
+
+      {/* SLA & CALENDAR */}
+      <SettingsSection icon={CalendarDays} title="SLA & calendar" description="Default SLAs per instrument, and what counts as a working day">
+        <div className="mb-5">
+          <div className="text-xs uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>SLA presets (working days)</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {SLA_TYPES.filter(t => t.id !== 'custom').map(t => {
+              const presets = settings.slaPresets || DEFAULT_SLA_PRESETS;
+              const value = presets[t.id] ?? DEFAULT_SLA_PRESETS[t.id];
+              return (
+                <Field key={t.id} label={`${t.label} · ${t.description}`}>
+                  <input
+                    type="number"
+                    min="1"
+                    className="pd-input rounded-lg px-3 py-2 text-sm w-full"
+                    value={value}
+                    onChange={(e) => {
+                      const next = { ...presets, [t.id]: Math.max(1, Number(e.target.value) || 1) };
+                      updateSettings({ slaPresets: next });
+                    }}
+                  />
+                </Field>
+              );
+            })}
+          </div>
+          <p className="text-[11px] mt-2" style={{ color: 'var(--text-faint)' }}>
+            New tasks and tenders pick up these defaults; you can override per item or choose a Custom value.
+          </p>
+        </div>
+
+        <div className="pd-divider mb-5" />
+
+        <div>
+          <div className="text-xs uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>Work week</div>
+          <div className="flex flex-wrap gap-2">
+            {WEEKDAYS.map(day => {
+              const week = Array.isArray(settings.workWeek) && settings.workWeek.length > 0
+                ? settings.workWeek
+                : DEFAULT_WORK_WEEK;
+              const active = week.includes(day.id);
+              return (
+                <button
+                  key={day.id}
+                  type="button"
+                  onClick={() => {
+                    const next = active
+                      ? week.filter(d => d !== day.id)
+                      : [...week, day.id].sort((a, b) => a - b);
+                    if (next.length === 0) return; // never allow zero working days
+                    updateSettings({ workWeek: next });
+                  }}
+                  className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                  style={{
+                    background: active ? 'var(--accent-soft)' : 'var(--surface-2)',
+                    border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+                    color: active ? 'var(--accent)' : 'var(--text-muted)',
+                    minWidth: 56,
+                  }}
+                  title={day.long}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] mt-2" style={{ color: 'var(--text-faint)' }}>
+            Used to compute deadlines from SLA days — non-working days are skipped. Default is Mon–Fri.
+          </p>
         </div>
       </SettingsSection>
 

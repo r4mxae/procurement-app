@@ -1,5 +1,5 @@
 import { Calendar, Edit2, History, Paperclip, Timer, Trash2 } from 'lucide-react';
-import { TENDER_STAGES } from '../../constants/domain';
+import { SLA_TYPES, TENDER_STAGES } from '../../constants/domain';
 import { daysUntil, fmtDateShort, fmtDuration, fmtMoney, totalLoggedSeconds } from '../../lib/format';
 import { LiveDuration } from '../common/LiveDuration';
 import { StagePill } from '../common/StagePill';
@@ -13,6 +13,16 @@ export function TenderCard({ tender, index, isActiveTimer, activeStartTime, hasO
   const logCount = (tender.workLogs || []).length;
   const attachmentCount = (tender.attachments || []).length;
   const showTimeChip = baseSeconds > 0 || isActiveTimer;
+  const slaLabel = tender.slaType ? SLA_TYPES.find(t => t.id === tender.slaType)?.label : null;
+
+  // Derived savings — both calculations are shown when their inputs are
+  // present. Falls back to the legacy savings field for old data.
+  const fo = Number(tender.firstOffer);
+  const fn = Number(tender.finalOffer);
+  const budget = Number(tender.value) || 0;
+  const savingsVsFirst = fo > 0 && fn > 0 ? fo - fn : null;
+  const savingsVsBudget = budget > 0 && fn > 0 ? budget - fn : null;
+  const legacySavings = Number(tender.savings) || 0;
 
   return (
     <div
@@ -32,22 +42,48 @@ export function TenderCard({ tender, index, isActiveTimer, activeStartTime, hasO
         <StagePill stage={tender.stage} />
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-3">
         <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
-          <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Value</div>
-          <div className="pd-display text-base font-medium mt-0.5">{fmtMoney(tender.value)}</div>
+          <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Budget</div>
+          <div className="pd-display text-base font-medium mt-0.5">{fmtMoney(budget)}</div>
         </div>
         <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
           <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Vendors</div>
           <div className="pd-display text-base font-medium mt-0.5">{tender.vendorCount || 0}</div>
         </div>
-        <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
-          <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Savings</div>
-          <div className="pd-display text-base font-medium mt-0.5" style={{ color: tender.savings > 0 ? 'var(--success)' : 'var(--text)' }}>
-            {tender.savings > 0 ? fmtMoney(tender.savings) : '—'}
+      </div>
+
+      {/* Savings strip — two derived figures when offers are filled,
+          legacy single-number fallback for older tenders, otherwise hide. */}
+      {(savingsVsFirst != null || savingsVsBudget != null) ? (
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-4">
+          <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>vs first offer</div>
+            <div
+              className="pd-display text-base font-medium mt-0.5"
+              style={{ color: savingsVsFirst != null ? (savingsVsFirst >= 0 ? 'var(--success)' : 'var(--danger)') : 'var(--text-muted)' }}
+            >
+              {savingsVsFirst != null ? fmtMoney(savingsVsFirst) : '—'}
+            </div>
+          </div>
+          <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>vs budget</div>
+            <div
+              className="pd-display text-base font-medium mt-0.5"
+              style={{ color: savingsVsBudget != null ? (savingsVsBudget >= 0 ? 'var(--success)' : 'var(--danger)') : 'var(--text-muted)' }}
+            >
+              {savingsVsBudget != null ? fmtMoney(savingsVsBudget) : '—'}
+            </div>
           </div>
         </div>
-      </div>
+      ) : legacySavings > 0 ? (
+        <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
+          <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Savings</div>
+          <div className="pd-display text-base font-medium mt-0.5" style={{ color: 'var(--success)' }}>
+            {fmtMoney(legacySavings)}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-3">
         <div className="flex justify-between text-[10px] uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>
@@ -64,6 +100,15 @@ export function TenderCard({ tender, index, isActiveTimer, activeStartTime, hasO
           <div className="text-xs flex items-center gap-1.5 pd-mono" style={{ color: days != null && days < 0 && tender.stage !== 'closed' ? 'var(--danger)' : 'var(--text-muted)' }}>
             <Calendar size={11} />
             {tender.deadline ? `${fmtDateShort(tender.deadline)}${days != null ? ` · ${days < 0 ? `${Math.abs(days)}d late` : days === 0 ? 'today' : `${days}d left`}` : ''}` : 'No deadline'}
+            {slaLabel && (
+              <span
+                className="px-1.5 py-0.5 rounded uppercase tracking-wider"
+                style={{ background: 'var(--surface-3)', color: 'var(--text-muted)', fontSize: 9, marginLeft: 4 }}
+                title={`SLA: ${slaLabel}${tender.slaDays ? ` (${tender.slaDays} working days)` : ''}`}
+              >
+                {slaLabel}
+              </span>
+            )}
           </div>
           {showTimeChip && (
             <button

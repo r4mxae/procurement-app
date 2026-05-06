@@ -13,23 +13,25 @@ function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
 
-  const filtered = useMemo(() => data.tasks
+  // Tasks tab is for open work — completed tasks live in the Closed tab.
+  const openTasks = useMemo(() => data.tasks.filter(t => t.status !== 'completed'), [data.tasks]);
+
+  const filtered = useMemo(() => openTasks
     .filter(t => filter === 'all' || t.status === filter)
     .filter(t => !search || t.title.toLowerCase().includes(search.toLowerCase()) || (t.description || '').toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       const order = { critical: 0, high: 1, medium: 2, low: 3 };
-      const pa = a.status === 'completed' ? 99 : (order[a.priority] ?? 5);
-      const pb = b.status === 'completed' ? 99 : (order[b.priority] ?? 5);
+      const pa = order[a.priority] ?? 5;
+      const pb = order[b.priority] ?? 5;
       if (pa !== pb) return pa - pb;
       return new Date(a.deadline || '2999-01-01') - new Date(b.deadline || '2999-01-01');
-    }), [data.tasks, filter, search]);
+    }), [openTasks, filter, search]);
 
   const counts = useMemo(() => ({
-    all: data.tasks.length,
-    todo: data.tasks.filter(t => t.status === 'todo').length,
-    in_progress: data.tasks.filter(t => t.status === 'in_progress').length,
-    completed: data.tasks.filter(t => t.status === 'completed').length
-  }), [data.tasks]);
+    all: openTasks.length,
+    todo: openTasks.filter(t => t.status === 'todo').length,
+    in_progress: openTasks.filter(t => t.status === 'in_progress').length,
+  }), [openTasks]);
 
   return (
     <div className="px-4 sm:px-6 md:px-10 py-6 md:py-8 pb-16">
@@ -42,10 +44,9 @@ function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <FilterTabs
           options={[
-            { id: 'all', label: 'All', count: counts.all },
+            { id: 'all', label: 'All open', count: counts.all },
             { id: 'todo', label: 'To Do', count: counts.todo },
             { id: 'in_progress', label: 'In Progress', count: counts.in_progress },
-            { id: 'completed', label: 'Completed', count: counts.completed }
           ]}
           value={filter}
           onChange={setFilter}

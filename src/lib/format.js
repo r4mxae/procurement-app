@@ -64,6 +64,40 @@ export const daysUntil = (iso) => {
 
 export const todayISO = () => new Date().toISOString().slice(0, 10);
 
+// ─── Working-days math ──────────────────────────────────────────
+// Advance a calendar date by N working days, where "working" means a
+// weekday that's in the user's configured workWeek (ISO numbers 1=Mon
+// .. 7=Sun). Used to convert an SLA-days choice on a task/tender into
+// a concrete deadline ISO date stored on the row.
+//
+// We start counting from the *next* working day after `startISO` so
+// that creating a 1-day SLA today doesn't immediately put the deadline
+// in the past on the same calendar day.
+export const addWorkingDays = (startISO, days, workWeek) => {
+  if (!startISO) return null;
+  const wd = Array.isArray(workWeek) && workWeek.length > 0 ? workWeek : [1, 2, 3, 4, 5];
+  const wdSet = new Set(wd.map(Number));
+  const isoDay = (d) => {
+    // JS getDay: 0=Sun..6=Sat → ISO 1=Mon..7=Sun
+    const x = d.getDay();
+    return x === 0 ? 7 : x;
+  };
+  const d = new Date(startISO);
+  d.setHours(12, 0, 0, 0); // mid-day to avoid DST/timezone edges
+  let remaining = Math.max(0, Math.floor(Number(days) || 0));
+  // Edge case: zero working days → return the start date itself if it's
+  // a working day, otherwise advance to the next one.
+  if (remaining === 0) {
+    while (!wdSet.has(isoDay(d))) d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+  while (remaining > 0) {
+    d.setDate(d.getDate() + 1);
+    if (wdSet.has(isoDay(d))) remaining -= 1;
+  }
+  return d.toISOString().slice(0, 10);
+};
+
 export const monthKey = (iso) => {
   if (!iso) return '';
   return iso.slice(0, 7);

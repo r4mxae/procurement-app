@@ -17,6 +17,8 @@ const taskFromRow = (r) => ({
   priority: r.priority,
   category: r.category || '',
   deadline: r.deadline || null,
+  slaType: r.sla_type || null,
+  slaDays: r.sla_days != null ? Number(r.sla_days) : null,
   completedAt: r.completed_at || null,
   workLogs: Array.isArray(r.work_logs) ? r.work_logs : [],
   attachments: Array.isArray(r.attachments) ? r.attachments : [],
@@ -32,6 +34,8 @@ const taskToRow = (t, userId) => ({
   priority: t.priority ?? 'medium',
   category: t.category ?? '',
   deadline: t.deadline || null,
+  sla_type: t.slaType || null,
+  sla_days: t.slaDays != null && t.slaDays !== '' ? Number(t.slaDays) : null,
   completed_at: t.completedAt || null,
   work_logs: Array.isArray(t.workLogs) ? t.workLogs : [],
   attachments: Array.isArray(t.attachments) ? t.attachments : [],
@@ -45,6 +49,12 @@ const tenderFromRow = (r) => ({
   value: Number(r.value) || 0,
   vendorCount: r.vendor_count || 0,
   deadline: r.deadline || null,
+  slaType: r.sla_type || null,
+  slaDays: r.sla_days != null ? Number(r.sla_days) : null,
+  firstOffer: r.first_offer != null ? Number(r.first_offer) : null,
+  finalOffer: r.final_offer != null ? Number(r.final_offer) : null,
+  // Legacy `savings` column kept for backward-compat; new code derives
+  // savings from the offer/budget triple instead of writing this field.
   savings: Number(r.savings) || 0,
   notes: r.notes || '',
   workLogs: Array.isArray(r.work_logs) ? r.work_logs : [],
@@ -61,6 +71,10 @@ const tenderToRow = (t, userId) => ({
   value: Number(t.value) || 0,
   vendor_count: Number(t.vendorCount) || 0,
   deadline: t.deadline || null,
+  sla_type: t.slaType || null,
+  sla_days: t.slaDays != null && t.slaDays !== '' ? Number(t.slaDays) : null,
+  first_offer: t.firstOffer != null && t.firstOffer !== '' ? Number(t.firstOffer) : null,
+  final_offer: t.finalOffer != null && t.finalOffer !== '' ? Number(t.finalOffer) : null,
   savings: Number(t.savings) || 0,
   notes: t.notes ?? '',
   work_logs: Array.isArray(t.workLogs) ? t.workLogs : [],
@@ -110,6 +124,9 @@ const profileToRow = (p, userId) => ({
   target_percentage: Number(p.targetPercentage) || 0,
 });
 
+const DEFAULT_SLA_PRESETS = { rfq: 18, vo: 20, rfi: 25, rfp: 85 };
+const DEFAULT_WORK_WEEK = [1, 2, 3, 4, 5];
+
 const settingsFromRow = (r) => r ? ({
   currency: r.currency || 'USD',
   dateFormat: r.date_format || 'medium',
@@ -120,6 +137,10 @@ const settingsFromRow = (r) => r ? ({
   customSavingsCategories: r.custom_savings_categories || [],
   textSize: r.text_size || 'regular',
   boldText: !!r.bold_text,
+  slaPresets: { ...DEFAULT_SLA_PRESETS, ...(r.sla_presets || {}) },
+  workWeek: Array.isArray(r.work_week) && r.work_week.length > 0
+    ? r.work_week.map(Number)
+    : DEFAULT_WORK_WEEK,
   _theme: r.theme || 'obsidian',
   _activeTimer: r.active_timer || null,
 }) : {
@@ -127,6 +148,8 @@ const settingsFromRow = (r) => r ? ({
   defaultTaskPriority: 'medium', accentPreset: 'theme',
   customTaskCategories: [], customSavingsCategories: [],
   textSize: 'regular', boldText: false,
+  slaPresets: { ...DEFAULT_SLA_PRESETS },
+  workWeek: [...DEFAULT_WORK_WEEK],
   _theme: 'obsidian', _activeTimer: null,
 };
 
@@ -142,6 +165,10 @@ const settingsToRow = (s, userId, theme, activeTimer) => ({
   custom_savings_categories: Array.isArray(s?.customSavingsCategories) ? s.customSavingsCategories : [],
   text_size: ['regular','large','xl'].includes(s?.textSize) ? s.textSize : 'regular',
   bold_text: !!s?.boldText,
+  sla_presets: s?.slaPresets && typeof s.slaPresets === 'object' ? s.slaPresets : DEFAULT_SLA_PRESETS,
+  work_week: Array.isArray(s?.workWeek) && s.workWeek.length > 0
+    ? s.workWeek.map(Number)
+    : DEFAULT_WORK_WEEK,
   active_timer: activeTimer ?? null,
 });
 
@@ -283,6 +310,12 @@ export async function patchSettingsRemote(userId, patch) {
   if ('customSavingsCategories' in patch) row.custom_savings_categories = patch.customSavingsCategories;
   if ('textSize' in patch) row.text_size = patch.textSize;
   if ('boldText' in patch) row.bold_text = !!patch.boldText;
+  if ('slaPresets' in patch && patch.slaPresets && typeof patch.slaPresets === 'object') {
+    row.sla_presets = patch.slaPresets;
+  }
+  if ('workWeek' in patch && Array.isArray(patch.workWeek)) {
+    row.work_week = patch.workWeek.map(Number);
+  }
   if (Object.keys(row).length === 0) return;
   // Upsert because the row may not exist on the very first write.
   row.user_id = userId;

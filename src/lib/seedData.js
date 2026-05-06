@@ -67,7 +67,9 @@ export const seedData = () => {
       customTaskCategories: [],
       customSavingsCategories: [],
       textSize: 'regular',
-      boldText: false
+      boldText: false,
+      slaPresets: { rfq: 18, vo: 20, rfi: 25, rfp: 85 },
+      workWeek: [1, 2, 3, 4, 5],
     }
   };
 };

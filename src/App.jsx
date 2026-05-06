@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Activity, ChevronLeft, ChevronRight, ClipboardList, DollarSign, Download,
+  Activity, Archive, ChevronLeft, ChevronRight, ClipboardList, DollarSign, Download,
   FileText, LayoutDashboard, ListChecks, LogOut, Menu, Palette, Settings, TrendingUp,
 } from 'lucide-react';
 
@@ -42,6 +42,7 @@ import {
 import { supabase } from './lib/supabase';
 
 import ActivityView from './views/ActivityView';
+import ClosedView from './views/ClosedView';
 import DashboardView from './views/DashboardView';
 import LoginView from './views/LoginView';
 import PerformanceView from './views/PerformanceView';
@@ -606,11 +607,14 @@ function AuthedDashboard({ user }) {
     await supabase.auth.signOut();
   };
 
+  const closedCount = data.tasks.filter(t => t.status === 'completed').length
+    + data.tenders.filter(t => ['closed', 'awarded'].includes(t.stage)).length;
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'work', label: 'All Work', icon: ListChecks, count: data.tasks.filter(t => t.status !== 'completed').length + data.tenders.filter(t => !['closed', 'awarded'].includes(t.stage)).length },
     { id: 'tasks', label: 'Tasks', icon: ClipboardList, count: data.tasks.filter(t => t.status !== 'completed').length },
     { id: 'tenders', label: 'Tenders', icon: FileText, count: data.tenders.filter(t => !['closed', 'awarded'].includes(t.stage)).length },
+    { id: 'closed', label: 'Closed', icon: Archive, count: closedCount },
     { id: 'savings', label: 'Savings', icon: DollarSign },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'activity', label: 'Activity Log', icon: Activity },
@@ -884,6 +888,21 @@ function AuthedDashboard({ user }) {
           {view === 'tenders' && (
             <TendersView
               data={data}
+              upsertTender={upsertTender}
+              deleteTender={deleteTender}
+              activeTimer={data.activeTimer}
+              onStartTimer={startTimer}
+              onStopTimer={stopTimer}
+              onViewLogs={(kind, itemId) => setLogsView({ kind, itemId })}
+              onViewAttachments={(kind, itemId) => setAttachmentsView({ kind, itemId })}
+            />
+          )}
+          {view === 'closed' && (
+            <ClosedView
+              data={data}
+              upsertTask={upsertTask}
+              updateTaskStatus={updateTaskStatus}
+              deleteTask={deleteTask}
               upsertTender={upsertTender}
               deleteTender={deleteTender}
               activeTimer={data.activeTimer}

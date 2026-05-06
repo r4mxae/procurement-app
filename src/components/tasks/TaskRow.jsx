@@ -1,4 +1,5 @@
 import { Calendar, CheckCircle2, Edit2, Hash, History, Paperclip, Timer, Trash2 } from 'lucide-react';
+import { SLA_TYPES } from '../../constants/domain';
 import { daysUntil, fmtDateShort, fmtDuration, totalLoggedSeconds, getUrgentDays } from '../../lib/format';
 import { LiveDuration } from '../common/LiveDuration';
 import { PriorityBadge } from '../common/PriorityBadge';
@@ -6,6 +7,7 @@ import { StatusPill } from '../common/StatusPill';
 import { TimerButton } from '../common/TimerButton';
 
 export function TaskRow({ task, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments, onStatusChange, onEdit, onDelete }) {
+  const slaLabel = task.slaType ? SLA_TYPES.find(t => t.id === task.slaType)?.label : null;
   const days = daysUntil(task.deadline);
   const urgent = days != null && days <= getUrgentDays() && task.status !== 'completed';
   const overdue = days != null && days < 0 && task.status !== 'completed';
@@ -63,6 +65,15 @@ export function TaskRow({ task, index, isActiveTimer, activeStartTime, hasOtherT
                     {fmtDateShort(task.deadline)}
                     {days != null && task.status !== 'completed' && (
                       <span>· {days < 0 ? `${Math.abs(days)}d late` : days === 0 ? 'today' : `${days}d`}</span>
+                    )}
+                    {slaLabel && (
+                      <span
+                        className="px-1.5 py-0.5 rounded uppercase tracking-wider"
+                        style={{ background: 'var(--surface-3)', color: 'var(--text-muted)', fontSize: 9, marginLeft: 4 }}
+                        title={`SLA: ${slaLabel}${task.slaDays ? ` (${task.slaDays} working days)` : ''}`}
+                      >
+                        {slaLabel}
+                      </span>
                     )}
                   </span>
                 )}

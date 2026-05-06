@@ -14,16 +14,27 @@ function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTim
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
 
-  const filtered = useMemo(() => data.tenders
+  // Tenders tab is for open lifecycle stages — closed/awarded live in the Closed tab.
+  const CLOSED_STAGES = ['closed', 'awarded'];
+  const openTenders = useMemo(
+    () => data.tenders.filter(t => !CLOSED_STAGES.includes(t.stage)),
+    [data.tenders]
+  );
+  const openStages = useMemo(
+    () => TENDER_STAGES.filter(s => !CLOSED_STAGES.includes(s.id)),
+    []
+  );
+
+  const filtered = useMemo(() => openTenders
     .filter(t => stage === 'all' || t.stage === stage)
     .filter(t => !search || t.title.toLowerCase().includes(search.toLowerCase()) || (t.reference || '').toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => new Date(a.deadline || '2999-01-01') - new Date(b.deadline || '2999-01-01')),
-    [data.tenders, stage, search]);
+    [openTenders, stage, search]);
 
-  const counts = useMemo(() => TENDER_STAGES.reduce(
-    (acc, s) => { acc[s.id] = data.tenders.filter(t => t.stage === s.id).length; return acc; },
-    { all: data.tenders.length }
-  ), [data.tenders]);
+  const counts = useMemo(() => openStages.reduce(
+    (acc, s) => { acc[s.id] = openTenders.filter(t => t.stage === s.id).length; return acc; },
+    { all: openTenders.length }
+  ), [openTenders, openStages]);
 
   return (
     <div className="px-4 sm:px-6 md:px-10 py-6 md:py-8 pb-16">
@@ -36,8 +47,8 @@ function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTim
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <FilterTabs
           options={[
-            { id: 'all', label: 'All', count: counts.all },
-            ...TENDER_STAGES.map(s => ({ id: s.id, label: s.label, count: counts[s.id] }))
+            { id: 'all', label: 'All open', count: counts.all },
+            ...openStages.map(s => ({ id: s.id, label: s.label, count: counts[s.id] }))
           ]}
           value={stage}
           onChange={setStage}
@@ -75,10 +86,10 @@ function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTim
       )}
 
       <Modal open={adding} onClose={() => setAdding(false)} title="New Tender">
-        <TenderForm onSubmit={(d) => { upsertTender(d); setAdding(false); }} onCancel={() => setAdding(false)} />
+        <TenderForm settings={data.settings} onSubmit={(d) => { upsertTender(d); setAdding(false); }} onCancel={() => setAdding(false)} />
       </Modal>
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Tender">
-        {editing && <TenderForm initial={editing} onSubmit={(d) => { upsertTender({ ...editing, ...d }); setEditing(null); }} onCancel={() => setEditing(null)} />}
+        {editing && <TenderForm settings={data.settings} initial={editing} onSubmit={(d) => { upsertTender({ ...editing, ...d }); setEditing(null); }} onCancel={() => setEditing(null)} />}
       </Modal>
     </div>
   );
