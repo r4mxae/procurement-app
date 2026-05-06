@@ -1,8 +1,12 @@
 // Horizontal filter tab bar.
 
-export function FilterTabs({ options, value, onChange }) {
+export function FilterTabs({ options, value, onChange, dataTour }) {
   return (
-    <div className="inline-flex p-1 rounded-lg" style={{ background: 'var(--surface-2)' }}>
+    <div
+      className="inline-flex p-1 rounded-lg"
+      style={{ background: 'var(--surface-2)' }}
+      data-tour={dataTour}
+    >
       {options.map(opt => {
         const active = value === opt.id;
         return (

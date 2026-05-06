@@ -9,9 +9,11 @@ import {
 } from 'lucide-react';
 
 import { ActiveTimerBanner } from './components/common/ActiveTimerBanner';
+import { TourOverlay } from './components/common/TourOverlay';
 import { AttachmentsModal } from './components/modals/AttachmentsModal';
 import { LogEntryModal } from './components/modals/LogEntryModal';
 import { ViewLogsModal } from './components/modals/ViewLogsModal';
+import { TourProvider } from './lib/tourContext';
 
 import { ACCENT_PRESETS, CURRENCIES, THEMES, isLightTheme } from './constants/locale';
 import {
@@ -660,6 +662,7 @@ function AuthedDashboard({ user }) {
   }
 
   return (
+    <TourProvider setView={setView}>
     <div className={a11yClass} data-theme={theme} style={accentOverride || undefined}>
       <div className="pd-mobile-topbar">
         <button
@@ -739,6 +742,7 @@ function AuthedDashboard({ user }) {
                 <button
                   key={item.id}
                   type="button"
+                  data-tour={`sidebar-${item.id}`}
                   onClick={() => setView(item.id)}
                   className={`pd-nav-item relative w-full flex items-center rounded-lg mb-1 ${active ? 'active' : ''} ${sbCollapsedUI ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}`}
                   style={{ color: active ? 'var(--text)' : 'var(--text-muted)', background: 'transparent', border: 'none', textAlign: 'left' }}
@@ -961,7 +965,10 @@ function AuthedDashboard({ user }) {
           onDelete={(att) => deleteAttachment(attachmentsView.kind, attachmentsView.itemId, att)}
         />
       )}
+
+      <TourOverlay />
     </div>
+    </TourProvider>
   );
 }
 

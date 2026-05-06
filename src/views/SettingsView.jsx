@@ -116,7 +116,7 @@ function SettingsView({ data, theme, setTheme, updateProfile, updateSettings, re
 
   return (
     <div className="px-4 sm:px-6 md:px-10 py-6 md:py-8 pb-16 max-w-4xl">
-      <PageHeader title="Settings" subtitle="Personalize your workspace and manage your data" />
+      <PageHeader title="Settings" subtitle="Personalize your workspace and manage your data" dataTour="page-header" />
 
       {/* PROFILE */}
       <SettingsSection icon={User} title="Profile" description="Your identity and personal targets">

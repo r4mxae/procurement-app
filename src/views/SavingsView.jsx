@@ -142,9 +142,11 @@ function SavingsView({ data, updateProfile }) {
       <PageHeader
         title="Savings"
         subtitle="Auto-derived from tender first / final / budget offers"
+        dataTour="page-header"
         action={
           <div className="flex items-center gap-2">
             <button
+              data-tour="savings-snapshot-btn"
               className="pd-btn pd-btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 disabled:opacity-50"
               onClick={handleExportSnapshot}
               disabled={snapshotting || entries.length === 0}
@@ -153,6 +155,7 @@ function SavingsView({ data, updateProfile }) {
               <Camera size={14} /> {snapshotting ? 'Capturing…' : 'Snapshot'}
             </button>
             <button
+              data-tour="savings-export-btn"
               className="pd-btn pd-btn-primary px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
               onClick={handleExportExcel}
               disabled={allVsFirst.length === 0 && allVsBudget.length === 0}
@@ -166,6 +169,7 @@ function SavingsView({ data, updateProfile }) {
 
       <div className="mb-5">
         <FilterTabs
+          dataTour="filter-tabs"
           options={MODES.map(m => ({
             id: m.id,
             label: m.label,

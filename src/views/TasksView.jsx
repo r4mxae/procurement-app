@@ -38,11 +38,13 @@ function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer
       <PageHeader
         title="Tasks"
         subtitle="Manage your day-to-day procurement workload"
-        action={<button className="pd-btn pd-btn-primary px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onClick={() => setAdding(true)}><Plus size={15} /> New Task</button>}
+        dataTour="page-header"
+        action={<button data-tour="new-task-btn" className="pd-btn pd-btn-primary px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onClick={() => setAdding(true)}><Plus size={15} /> New Task</button>}
       />
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <FilterTabs
+          dataTour="filter-tabs"
           options={[
             { id: 'all', label: 'All open', count: counts.all },
             { id: 'todo', label: 'To Do', count: counts.todo },
@@ -51,7 +53,7 @@ function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer
           value={filter}
           onChange={setFilter}
         />
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="relative flex-1 min-w-[200px] max-w-sm" data-tour="search-input">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input
             className="pd-input rounded-lg pl-9 pr-3 py-2 text-sm w-full"

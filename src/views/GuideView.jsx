@@ -10,12 +10,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity, Archive, BookOpen, Camera, Check, CheckCircle2, ChevronDown, ChevronRight,
   ClipboardList, DollarSign, FileSpreadsheet, FileText, LayoutDashboard, Lightbulb,
-  ListChecks, Paperclip, Search, Settings as SettingsIcon, Sparkles, Timer, TrendingUp,
+  ListChecks, Paperclip, Play, Search, Settings as SettingsIcon, Sparkles, Timer, TrendingUp,
 } from 'lucide-react';
 import { Empty } from '../components/common/Empty';
 import { PageHeader } from '../components/common/PageHeader';
 import { storage } from '../lib/storage';
 import { GUIDE_PROGRESS_KEY } from '../constants/storage';
+import { useTour } from '../lib/tourContext';
 
 // ─── Chapter content ────────────────────────────────────────────
 // Keep this declarative — the renderer below knows nothing about the
@@ -28,6 +29,7 @@ const buildChapters = ({ goTo }) => [
     title: 'Welcome to ProcTrax',
     summary: 'A 60-second tour of what the app does and how the pieces fit together.',
     estReadMin: 1,
+    tourKey: 'getting-started',
     body: [
       {
         title: 'What this app is for',
@@ -101,6 +103,7 @@ const buildChapters = ({ goTo }) => [
     title: 'Tasks',
     summary: 'Day-to-day work items: priorities, statuses, SLAs, time logs, and attachments.',
     estReadMin: 2,
+    tourKey: 'tasks-tour',
     body: [
       {
         title: 'Creating a task',
@@ -132,6 +135,7 @@ const buildChapters = ({ goTo }) => [
     title: 'Tenders',
     summary: 'Lifecycle items with stages, budget, vendor count, and the inputs for savings.',
     estReadMin: 2,
+    tourKey: 'tenders-tour',
     body: [
       {
         title: 'Stages',
@@ -182,6 +186,7 @@ const buildChapters = ({ goTo }) => [
     title: 'Savings (auto-derived)',
     summary: 'Two views of the same numbers: vs first offer (negotiation) and vs budget (under-plan).',
     estReadMin: 2,
+    tourKey: 'savings-tour',
     body: [
       {
         title: 'No manual logging',
@@ -303,6 +308,7 @@ const buildChapters = ({ goTo }) => [
     title: 'Settings',
     summary: 'Profile, theme/accent, accessibility, currency, SLA presets, work week, custom categories.',
     estReadMin: 2,
+    tourKey: 'settings-tour',
     body: [
       {
         title: 'Profile and target',
@@ -335,6 +341,7 @@ const buildChapters = ({ goTo }) => [
 
 // ─── Component ─────────────────────────────────────────────────
 function GuideView({ setView }) {
+  const { startTour, hasTour } = useTour();
   const [readIds, setReadIds] = useState(new Set());
   const [openId, setOpenId] = useState(null);
   const [search, setSearch] = useState('');
@@ -423,6 +430,44 @@ function GuideView({ setView }) {
             <CheckCircle2 size={13} /> You{"’"}ve been through everything. Welcome aboard.
           </div>
         )}
+      </div>
+
+      {/* Guided tours strip — Oracle Guided Learning style overlay. */}
+      <div
+        className="pd-card p-5 mb-6"
+        style={{
+          background: 'linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 100%)',
+          border: '1px solid var(--accent)',
+        }}
+      >
+        <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Play size={15} style={{ color: 'var(--accent)' }} />
+            <h3 className="pd-display text-lg font-medium">Take a guided tour</h3>
+          </div>
+          <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+            Spotlights real UI elements · Esc to exit · ← / → to navigate
+          </span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          {[
+            { key: 'getting-started', label: 'Getting started' },
+            { key: 'tasks-tour',      label: 'Tasks tour' },
+            { key: 'tenders-tour',    label: 'Tenders tour' },
+            { key: 'savings-tour',    label: 'Savings tour' },
+            { key: 'settings-tour',   label: 'Settings tour' },
+          ].filter(t => hasTour(t.key)).map(t => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => startTour(t.key)}
+              className="pd-btn pd-btn-ghost px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1.5"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border-strong)' }}
+            >
+              <Sparkles size={12} style={{ color: 'var(--accent)' }} /> {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Search */}
@@ -535,18 +580,30 @@ function GuideView({ setView }) {
                     )}
 
                     <div className="mt-5 flex items-center justify-between gap-3 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => toggleRead(ch.id)}
-                        className="pd-btn px-3 py-2 rounded-lg text-xs flex items-center gap-1.5"
-                        style={{
-                          background: isRead ? 'var(--success)' : 'var(--accent)',
-                          color: 'var(--bg)',
-                          border: 'none',
-                        }}
-                      >
-                        {isRead ? <><Check size={13} /> Marked as read</> : <><CheckCircle2 size={13} /> Mark as read</>}
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => toggleRead(ch.id)}
+                          className="pd-btn px-3 py-2 rounded-lg text-xs flex items-center gap-1.5"
+                          style={{
+                            background: isRead ? 'var(--success)' : 'var(--accent)',
+                            color: 'var(--bg)',
+                            border: 'none',
+                          }}
+                        >
+                          {isRead ? <><Check size={13} /> Marked as read</> : <><CheckCircle2 size={13} /> Mark as read</>}
+                        </button>
+                        {ch.tourKey && hasTour(ch.tourKey) && (
+                          <button
+                            type="button"
+                            onClick={() => startTour(ch.tourKey)}
+                            className="pd-btn pd-btn-ghost px-3 py-2 rounded-lg text-xs flex items-center gap-1.5"
+                            title="Walk through this feature with an interactive overlay"
+                          >
+                            <Play size={13} style={{ color: 'var(--accent)' }} /> Start guided tour
+                          </button>
+                        )}
+                      </div>
                       <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
                         Progress is saved on this device only.
                       </span>

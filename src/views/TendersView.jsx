@@ -41,11 +41,13 @@ function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTim
       <PageHeader
         title="Tenders"
         subtitle="Track tender lifecycle from draft to award"
-        action={<button className="pd-btn pd-btn-primary px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onClick={() => setAdding(true)}><Plus size={15} /> New Tender</button>}
+        dataTour="page-header"
+        action={<button data-tour="new-tender-btn" className="pd-btn pd-btn-primary px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onClick={() => setAdding(true)}><Plus size={15} /> New Tender</button>}
       />
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <FilterTabs
+          dataTour="filter-tabs"
           options={[
             { id: 'all', label: 'All open', count: counts.all },
             ...openStages.map(s => ({ id: s.id, label: s.label, count: counts[s.id] }))
