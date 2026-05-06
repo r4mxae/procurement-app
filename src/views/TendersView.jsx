@@ -8,7 +8,7 @@ import { TenderCard } from '../components/tenders/TenderCard';
 import { TenderForm } from '../components/tenders/TenderForm';
 import { TENDER_STAGES } from '../constants/domain';
 
-function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTimer, onStopTimer, onViewLogs }) {
+function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments }) {
   const [stage, setStage] = useState('all');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
@@ -65,6 +65,7 @@ function TendersView({ data, upsertTender, deleteTender, activeTimer, onStartTim
                 onStartTimer={() => onStartTimer('tender', t.id)}
                 onStopTimer={onStopTimer}
                 onViewLogs={() => onViewLogs('tender', t.id)}
+                onViewAttachments={() => onViewAttachments('tender', t.id)}
                 onEdit={() => setEditing(t)}
                 onDelete={() => { if (confirm(`Delete tender "${t.title}"?`)) deleteTender(t.id); }}
               />

@@ -1,16 +1,17 @@
-import { Calendar, ClipboardList, FileText, History, Timer } from 'lucide-react';
+import { Calendar, ClipboardList, FileText, History, Paperclip, Timer } from 'lucide-react';
 import { TASK_STATUSES, TENDER_STAGES } from '../../constants/domain';
 import { daysUntil, fmtDateShort, fmtDuration, totalLoggedSeconds, getUrgentDays } from '../../lib/format';
 import { LiveDuration } from '../common/LiveDuration';
 import { PriorityBadge } from '../common/PriorityBadge';
 import { TimerButton } from '../common/TimerButton';
 
-export function WorkRow({ item, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs }) {
+export function WorkRow({ item, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments }) {
   const days = daysUntil(item.deadline);
   const overdue = days != null && days < 0 && item._open;
   const urgent = days != null && days <= getUrgentDays() && days >= 0 && item._open;
   const baseSeconds = totalLoggedSeconds(item.workLogs);
   const logCount = (item.workLogs || []).length;
+  const attachmentCount = (item.attachments || []).length;
   const showTimeChip = baseSeconds > 0 || isActiveTimer;
 
   const statusLabel = item.kind === 'task'
@@ -86,6 +87,30 @@ export function WorkRow({ item, index, isActiveTimer, activeStartTime, hasOtherT
           {logCount > 0 && (
             <button className="pd-icon-btn" onClick={onViewLogs} title="View work logs" aria-label="View work logs"><History size={14} /></button>
           )}
+          <button
+            className="pd-icon-btn relative"
+            onClick={onViewAttachments}
+            title={attachmentCount > 0 ? `Attachments · ${attachmentCount}` : 'Attachments'}
+            aria-label="Attachments"
+            style={attachmentCount > 0 ? { color: 'var(--accent)' } : undefined}
+          >
+            <Paperclip size={14} />
+            {attachmentCount > 0 && (
+              <span
+                className="absolute pd-mono"
+                style={{
+                  top: 2, right: 2,
+                  fontSize: 9, lineHeight: 1,
+                  padding: '2px 4px',
+                  borderRadius: 999,
+                  background: 'var(--accent)',
+                  color: 'var(--bg)'
+                }}
+              >
+                {attachmentCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </div>

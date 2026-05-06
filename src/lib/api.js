@@ -19,6 +19,7 @@ const taskFromRow = (r) => ({
   deadline: r.deadline || null,
   completedAt: r.completed_at || null,
   workLogs: Array.isArray(r.work_logs) ? r.work_logs : [],
+  attachments: Array.isArray(r.attachments) ? r.attachments : [],
   createdAt: r.created_at,
 });
 
@@ -33,6 +34,7 @@ const taskToRow = (t, userId) => ({
   deadline: t.deadline || null,
   completed_at: t.completedAt || null,
   work_logs: Array.isArray(t.workLogs) ? t.workLogs : [],
+  attachments: Array.isArray(t.attachments) ? t.attachments : [],
 });
 
 const tenderFromRow = (r) => ({
@@ -46,6 +48,7 @@ const tenderFromRow = (r) => ({
   savings: Number(r.savings) || 0,
   notes: r.notes || '',
   workLogs: Array.isArray(r.work_logs) ? r.work_logs : [],
+  attachments: Array.isArray(r.attachments) ? r.attachments : [],
   createdAt: r.created_at,
 });
 
@@ -61,6 +64,7 @@ const tenderToRow = (t, userId) => ({
   savings: Number(t.savings) || 0,
   notes: t.notes ?? '',
   work_logs: Array.isArray(t.workLogs) ? t.workLogs : [],
+  attachments: Array.isArray(t.attachments) ? t.attachments : [],
 });
 
 const savingFromRow = (r) => ({
@@ -198,6 +202,7 @@ export async function patchTaskRemote(userId, id, patch) {
   if ('status' in patch) row.status = patch.status;
   if ('completedAt' in patch) row.completed_at = patch.completedAt;
   if ('workLogs' in patch) row.work_logs = patch.workLogs;
+  if ('attachments' in patch) row.attachments = patch.attachments;
   const { data, error } = await supabase
     .from('tasks').update(row).eq('user_id', userId).eq('id', id)
     .select().single();
@@ -221,6 +226,7 @@ export async function deleteTenderRemote(userId, id) {
 export async function patchTenderRemote(userId, id, patch) {
   const row = {};
   if ('workLogs' in patch) row.work_logs = patch.workLogs;
+  if ('attachments' in patch) row.attachments = patch.attachments;
   const { data, error } = await supabase
     .from('tenders').update(row).eq('user_id', userId).eq('id', id)
     .select().single();

@@ -1,16 +1,17 @@
-import { Calendar, Edit2, History, Timer, Trash2 } from 'lucide-react';
+import { Calendar, Edit2, History, Paperclip, Timer, Trash2 } from 'lucide-react';
 import { TENDER_STAGES } from '../../constants/domain';
 import { daysUntil, fmtDateShort, fmtDuration, fmtMoney, totalLoggedSeconds } from '../../lib/format';
 import { LiveDuration } from '../common/LiveDuration';
 import { StagePill } from '../common/StagePill';
 import { TimerButton } from '../common/TimerButton';
 
-export function TenderCard({ tender, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs, onEdit, onDelete }) {
+export function TenderCard({ tender, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments, onEdit, onDelete }) {
   const days = daysUntil(tender.deadline);
   const stageIdx = TENDER_STAGES.findIndex(s => s.id === tender.stage);
   const progress = ((stageIdx + 1) / TENDER_STAGES.length) * 100;
   const baseSeconds = totalLoggedSeconds(tender.workLogs);
   const logCount = (tender.workLogs || []).length;
+  const attachmentCount = (tender.attachments || []).length;
   const showTimeChip = baseSeconds > 0 || isActiveTimer;
 
   return (
@@ -92,6 +93,30 @@ export function TenderCard({ tender, index, isActiveTimer, activeStartTime, hasO
           {logCount > 0 && (
             <button className="pd-icon-btn" onClick={onViewLogs} title="View work logs" aria-label="View work logs"><History size={14} /></button>
           )}
+          <button
+            className="pd-icon-btn relative"
+            onClick={onViewAttachments}
+            title={attachmentCount > 0 ? `Attachments · ${attachmentCount}` : 'Attachments'}
+            aria-label="Attachments"
+            style={attachmentCount > 0 ? { color: 'var(--accent)' } : undefined}
+          >
+            <Paperclip size={14} />
+            {attachmentCount > 0 && (
+              <span
+                className="absolute pd-mono"
+                style={{
+                  top: 2, right: 2,
+                  fontSize: 9, lineHeight: 1,
+                  padding: '2px 4px',
+                  borderRadius: 999,
+                  background: 'var(--accent)',
+                  color: 'var(--bg)'
+                }}
+              >
+                {attachmentCount}
+              </span>
+            )}
+          </button>
           <button className="pd-icon-btn" onClick={onEdit} title="Edit" aria-label="Edit tender"><Edit2 size={14} /></button>
           <button className="pd-icon-btn danger" onClick={onDelete} title="Delete" aria-label="Delete tender"><Trash2 size={14} /></button>
         </div>

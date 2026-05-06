@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 
 import { ActiveTimerBanner } from './components/common/ActiveTimerBanner';
+import { AttachmentsModal } from './components/modals/AttachmentsModal';
 import { LogEntryModal } from './components/modals/LogEntryModal';
 import { ViewLogsModal } from './components/modals/ViewLogsModal';
 
@@ -27,6 +28,7 @@ import {
 import { seedData } from './lib/seedData';
 import { storage } from './lib/storage';
 import { useAuth } from './lib/auth';
+import { uploadAttachment, removeAttachmentFile } from './lib/attachments';
 import {
   loadAll,
   upsertTaskRemote, deleteTaskRemote, patchTaskRemote,
@@ -342,6 +344,7 @@ function AuthedDashboard({ user }) {
   // ─── TIMER + WORK LOGS ─────────────────────────────────────────
   const [pendingLog, setPendingLog] = useState(null);
   const [logsView, setLogsView] = useState(null);
+  const [attachmentsView, setAttachmentsView] = useState(null);
 
   const findItem = (kind, id) => {
     const list = kind === 'task' ? data.tasks : data.tenders;
@@ -451,6 +454,62 @@ function AuthedDashboard({ user }) {
     } else {
       fireAndForget('patchTenderLogsDel', patchTenderRemote(userId, itemId, { workLogs: nextLogs }));
     }
+  };
+
+  // ─── ATTACHMENTS ───────────────────────────────────────────────
+  // Add: upload first (so we have a real storage path), then patch the
+  // parent row's attachments[]. We don't insert a placeholder row before
+  // the upload finishes — if the upload fails the user just sees an
+  // inline error in the dialog and nothing is added.
+  const addAttachment = async (kind, itemId, file) => {
+    const meta = await uploadAttachment({ userId, kind, itemId, file });
+    let nextAttachments = [];
+    setData(d => {
+      const listKey = kind === 'task' ? 'tasks' : 'tenders';
+      return {
+        ...d,
+        [listKey]: d[listKey].map(it => {
+          if (it.id !== itemId) return it;
+          nextAttachments = [...(it.attachments || []), meta];
+          return { ...it, attachments: nextAttachments };
+        })
+      };
+    });
+    if (kind === 'task') {
+      fireAndForget('patchTaskAttachments', patchTaskRemote(userId, itemId, { attachments: nextAttachments }));
+    } else {
+      fireAndForget('patchTenderAttachments', patchTenderRemote(userId, itemId, { attachments: nextAttachments }));
+    }
+    const item = findItem(kind, itemId);
+    if (item) logActivity('attachment_added', `Attached "${meta.name}" to ${kind}: ${item.title}`);
+    return meta;
+  };
+
+  // Delete: remove the row metadata first (optimistic UI) then drop the
+  // blob. If the storage delete fails we log it but don't restore the
+  // row — better to have an orphaned blob than a list entry the user
+  // can't get rid of.
+  const deleteAttachment = (kind, itemId, attachment) => {
+    let nextAttachments = [];
+    setData(d => {
+      const listKey = kind === 'task' ? 'tasks' : 'tenders';
+      return {
+        ...d,
+        [listKey]: d[listKey].map(it => {
+          if (it.id !== itemId) return it;
+          nextAttachments = (it.attachments || []).filter(a => a.id !== attachment.id);
+          return { ...it, attachments: nextAttachments };
+        })
+      };
+    });
+    if (kind === 'task') {
+      fireAndForget('patchTaskAttachmentsDel', patchTaskRemote(userId, itemId, { attachments: nextAttachments }));
+    } else {
+      fireAndForget('patchTenderAttachmentsDel', patchTenderRemote(userId, itemId, { attachments: nextAttachments }));
+    }
+    fireAndForget('removeAttachmentBlob', removeAttachmentFile(attachment.path));
+    const item = findItem(kind, itemId);
+    if (item) logActivity('attachment_removed', `Removed "${attachment.name}" from ${kind}: ${item.title}`);
   };
 
   // Wipe every row this user owns and replace with imported workspace.
@@ -805,6 +864,7 @@ function AuthedDashboard({ user }) {
               onStartTimer={startTimer}
               onStopTimer={stopTimer}
               onViewLogs={(kind, itemId) => setLogsView({ kind, itemId })}
+              onViewAttachments={(kind, itemId) => setAttachmentsView({ kind, itemId })}
               onDeleteLog={deleteLogEntry}
             />
           )}
@@ -818,6 +878,7 @@ function AuthedDashboard({ user }) {
               onStartTimer={startTimer}
               onStopTimer={stopTimer}
               onViewLogs={(kind, itemId) => setLogsView({ kind, itemId })}
+              onViewAttachments={(kind, itemId) => setAttachmentsView({ kind, itemId })}
             />
           )}
           {view === 'tenders' && (
@@ -829,6 +890,7 @@ function AuthedDashboard({ user }) {
               onStartTimer={startTimer}
               onStopTimer={stopTimer}
               onViewLogs={(kind, itemId) => setLogsView({ kind, itemId })}
+              onViewAttachments={(kind, itemId) => setAttachmentsView({ kind, itemId })}
             />
           )}
           {view === 'savings' && <SavingsView data={data} upsertSaving={upsertSaving} deleteSaving={deleteSaving} updateProfile={updateProfile} />}
@@ -865,6 +927,16 @@ function AuthedDashboard({ user }) {
           profile={data.profile}
           onClose={() => setLogsView(null)}
           onDeleteLog={(logId) => deleteLogEntry(logsView.kind, logsView.itemId, logId)}
+        />
+      )}
+
+      {attachmentsView && (
+        <AttachmentsModal
+          kind={attachmentsView.kind}
+          item={findItem(attachmentsView.kind, attachmentsView.itemId)}
+          onClose={() => setAttachmentsView(null)}
+          onUpload={(file) => addAttachment(attachmentsView.kind, attachmentsView.itemId, file)}
+          onDelete={(att) => deleteAttachment(attachmentsView.kind, attachmentsView.itemId, att)}
         />
       )}
     </div>

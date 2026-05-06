@@ -7,7 +7,7 @@ import { WorkRow } from '../components/work/WorkRow';
 import { exportWorkLogToExcel } from '../lib/excel';
 import { fmtDuration, todayISO, totalLoggedSeconds } from '../lib/format';
 
-function WorkView({ data, activeTimer, onStartTimer, onStopTimer, onViewLogs, onDeleteLog }) {
+function WorkView({ data, activeTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments, onDeleteLog }) {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -129,6 +129,7 @@ function WorkView({ data, activeTimer, onStartTimer, onStopTimer, onViewLogs, on
                 onStartTimer={() => onStartTimer(it.kind, it.id)}
                 onStopTimer={onStopTimer}
                 onViewLogs={() => onViewLogs(it.kind, it.id)}
+                onViewAttachments={() => onViewAttachments(it.kind, it.id)}
               />
             );
           })}

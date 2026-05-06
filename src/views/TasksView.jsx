@@ -7,7 +7,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { TaskForm } from '../components/tasks/TaskForm';
 import { TaskRow } from '../components/tasks/TaskRow';
 
-function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer, onStartTimer, onStopTimer, onViewLogs }) {
+function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments }) {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
@@ -78,6 +78,7 @@ function TasksView({ data, upsertTask, updateTaskStatus, deleteTask, activeTimer
                 onStartTimer={() => onStartTimer('task', t.id)}
                 onStopTimer={onStopTimer}
                 onViewLogs={() => onViewLogs('task', t.id)}
+                onViewAttachments={() => onViewAttachments('task', t.id)}
                 onStatusChange={(s) => updateTaskStatus(t.id, s)}
                 onEdit={() => setEditing(t)}
                 onDelete={() => { if (confirm(`Delete task "${t.title}"?`)) deleteTask(t.id); }}

@@ -1,16 +1,17 @@
-import { Calendar, CheckCircle2, Edit2, Hash, History, Timer, Trash2 } from 'lucide-react';
+import { Calendar, CheckCircle2, Edit2, Hash, History, Paperclip, Timer, Trash2 } from 'lucide-react';
 import { daysUntil, fmtDateShort, fmtDuration, totalLoggedSeconds, getUrgentDays } from '../../lib/format';
 import { LiveDuration } from '../common/LiveDuration';
 import { PriorityBadge } from '../common/PriorityBadge';
 import { StatusPill } from '../common/StatusPill';
 import { TimerButton } from '../common/TimerButton';
 
-export function TaskRow({ task, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs, onStatusChange, onEdit, onDelete }) {
+export function TaskRow({ task, index, isActiveTimer, activeStartTime, hasOtherTimer, onStartTimer, onStopTimer, onViewLogs, onViewAttachments, onStatusChange, onEdit, onDelete }) {
   const days = daysUntil(task.deadline);
   const urgent = days != null && days <= getUrgentDays() && task.status !== 'completed';
   const overdue = days != null && days < 0 && task.status !== 'completed';
   const baseSeconds = totalLoggedSeconds(task.workLogs);
   const logCount = (task.workLogs || []).length;
+  const attachmentCount = (task.attachments || []).length;
   const showTimeChip = baseSeconds > 0 || isActiveTimer;
 
   return (
@@ -94,6 +95,30 @@ export function TaskRow({ task, index, isActiveTimer, activeStartTime, hasOtherT
               {logCount > 0 && (
                 <button className="pd-icon-btn" onClick={onViewLogs} title="View work logs" aria-label="View work logs"><History size={14} /></button>
               )}
+              <button
+                className="pd-icon-btn relative"
+                onClick={onViewAttachments}
+                title={attachmentCount > 0 ? `Attachments · ${attachmentCount}` : 'Attachments'}
+                aria-label="Attachments"
+                style={attachmentCount > 0 ? { color: 'var(--accent)' } : undefined}
+              >
+                <Paperclip size={14} />
+                {attachmentCount > 0 && (
+                  <span
+                    className="absolute pd-mono"
+                    style={{
+                      top: 2, right: 2,
+                      fontSize: 9, lineHeight: 1,
+                      padding: '2px 4px',
+                      borderRadius: 999,
+                      background: 'var(--accent)',
+                      color: 'var(--bg)'
+                    }}
+                  >
+                    {attachmentCount}
+                  </span>
+                )}
+              </button>
               <button className="pd-icon-btn" onClick={onEdit} title="Edit" aria-label="Edit task"><Edit2 size={14} /></button>
               <button className="pd-icon-btn danger" onClick={onDelete} title="Delete" aria-label="Delete task"><Trash2 size={14} /></button>
             </div>
