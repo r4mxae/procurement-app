@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Activity, Archive, ChevronLeft, ChevronRight, ClipboardList, DollarSign, Download,
+  Activity, Archive, BookOpen, ChevronLeft, ChevronRight, ClipboardList, DollarSign, Download,
   FileText, LayoutDashboard, ListChecks, LogOut, Menu, Palette, Settings, TrendingUp,
 } from 'lucide-react';
 
@@ -44,6 +44,7 @@ import { supabase } from './lib/supabase';
 import ActivityView from './views/ActivityView';
 import ClosedView from './views/ClosedView';
 import DashboardView from './views/DashboardView';
+import GuideView from './views/GuideView';
 import LoginView from './views/LoginView';
 import PerformanceView from './views/PerformanceView';
 import SavingsView from './views/SavingsView';
@@ -618,6 +619,7 @@ function AuthedDashboard({ user }) {
     { id: 'savings', label: 'Savings', icon: DollarSign },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'activity', label: 'Activity Log', icon: Activity },
+    { id: 'guide', label: 'Guide', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
@@ -915,6 +917,7 @@ function AuthedDashboard({ user }) {
           {view === 'savings' && <SavingsView data={data} updateProfile={updateProfile} />}
           {view === 'performance' && <PerformanceView data={data} />}
           {view === 'activity' && <ActivityView data={data} />}
+          {view === 'guide' && <GuideView setView={setView} />}
           {view === 'settings' && (
             <SettingsView
               data={data}
