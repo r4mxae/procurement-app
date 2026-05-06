@@ -912,7 +912,7 @@ function AuthedDashboard({ user }) {
               onViewAttachments={(kind, itemId) => setAttachmentsView({ kind, itemId })}
             />
           )}
-          {view === 'savings' && <SavingsView data={data} upsertSaving={upsertSaving} deleteSaving={deleteSaving} updateProfile={updateProfile} />}
+          {view === 'savings' && <SavingsView data={data} updateProfile={updateProfile} />}
           {view === 'performance' && <PerformanceView data={data} />}
           {view === 'activity' && <ActivityView data={data} />}
           {view === 'settings' && (

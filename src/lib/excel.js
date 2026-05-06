@@ -296,4 +296,121 @@ const exportWorkLogToExcel = ({ profile, items, filename }) => {
   }
 };
 
-export { exportWorkLogToExcel };
+// ─── Savings export ────────────────────────────────────────────
+// Two sheets, one per savings mode (vs first offer / vs budget). Each
+// sheet renders the per-tender math (first/final/budget → derived
+// amount), a totals row, and the YTD / all-time summary numbers the
+// dashboard shows.
+const buildSavingsSheet = (profile, mode, entries, year) => {
+  const ws = {};
+  let r = 0;
+
+  const modeTitle = mode === 'vsFirst' ? 'SAVINGS VS FIRST OFFER' : 'SAVINGS VS BUDGET';
+  setCell(ws, `A${r + 1}`, modeTitle, STYLE.reportTitle);
+  r++;
+  setCell(ws, `A${r + 1}`, `Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · ${profile?.name || '—'}`, STYLE.reportSubtitle);
+  r += 2;
+
+  const ytd = entries
+    .filter(e => new Date(e.date).getFullYear() === year)
+    .reduce((s, e) => s + Number(e.amount), 0);
+  const total = entries.reduce((s, e) => s + Number(e.amount), 0);
+
+  // Meta block: KPIs
+  setCell(ws, `A${r + 1}`, 'YEAR-TO-DATE', STYLE.metaLabel);
+  setCell(ws, `B${r + 1}`, ytd, { ...STYLE.metaValue, numFmt: '#,##0' });
+  setCell(ws, `D${r + 1}`, 'ALL-TIME', STYLE.metaLabel);
+  setCell(ws, `E${r + 1}`, total, { ...STYLE.metaValue, numFmt: '#,##0' });
+  r++;
+  setCell(ws, `A${r + 1}`, 'TENDERS', STYLE.metaLabel);
+  setCell(ws, `B${r + 1}`, entries.length, STYLE.metaValue);
+  r += 2;
+
+  setCell(ws, `A${r + 1}`, '  PER-TENDER BREAKDOWN', STYLE.sectionBanner);
+  for (let c = 1; c < 7; c++) setCell(ws, `${colLetter(c)}${r + 1}`, '', STYLE.sectionBanner);
+  r++;
+
+  const headers = mode === 'vsFirst'
+    ? ['Reference', 'Title', 'First Offer', 'Final Offer', 'Savings', 'Date', 'Stage']
+    : ['Reference', 'Title', 'Budget',      'Final Offer', 'Savings', 'Date', 'Stage'];
+  headers.forEach((h, c) => setCell(ws, `${colLetter(c)}${r + 1}`, h, STYLE.tableHeader));
+  const headerRow = r;
+  r++;
+
+  // Sort by date desc — most recent at the top, like the on-screen list.
+  const sorted = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+  sorted.forEach((e, i) => {
+    const cellStyle = i % 2 === 0 ? STYLE.cell : STYLE.cellAlt;
+    const monoStyle = i % 2 === 0 ? STYLE.cellMono : { ...STYLE.cellMono, fill: STYLE.cellAlt.fill };
+    const left = mode === 'vsFirst' ? e.firstOffer : e.budget;
+    setCell(ws, `A${r + 1}`, e.tenderRef || '—', monoStyle);
+    setCell(ws, `B${r + 1}`, e.tenderTitle || '', cellStyle);
+    setCell(ws, `C${r + 1}`, left ?? 0,            { ...monoStyle, numFmt: '#,##0' });
+    setCell(ws, `D${r + 1}`, e.finalOffer ?? 0,    { ...monoStyle, numFmt: '#,##0' });
+    setCell(ws, `E${r + 1}`, Number(e.amount) || 0, { ...monoStyle, numFmt: '#,##0' });
+    setCell(ws, `F${r + 1}`, fmtDate(e.date), monoStyle);
+    setCell(ws, `G${r + 1}`, e.stage || '', { ...cellStyle, alignment: { horizontal: 'center', vertical: 'center' } });
+    r++;
+  });
+
+  if (sorted.length === 0) {
+    setCell(ws, `A${r + 1}`, 'No tenders with the offers needed for this calculation yet.', { ...STYLE.cell, alignment: { horizontal: 'center', vertical: 'center' } });
+    r++;
+  } else {
+    setCell(ws, `A${r + 1}`, 'TOTAL', STYLE.totals);
+    setCell(ws, `B${r + 1}`, '', STYLE.totals);
+    setCell(ws, `C${r + 1}`, '', STYLE.totals);
+    setCell(ws, `D${r + 1}`, '', STYLE.totals);
+    setCell(ws, `E${r + 1}`, total, { ...STYLE.totals, alignment: { horizontal: 'center', vertical: 'center' }, numFmt: '#,##0' });
+    setCell(ws, `F${r + 1}`, '', STYLE.totals);
+    setCell(ws, `G${r + 1}`, '', STYLE.totals);
+    r++;
+  }
+
+  ws['!ref'] = `A1:G${r}`;
+  ws['!cols'] = [
+    { wch: 16 }, // Ref
+    { wch: 40 }, // Title
+    { wch: 16 }, // First/Budget
+    { wch: 16 }, // Final
+    { wch: 16 }, // Savings
+    { wch: 14 }, // Date
+    { wch: 14 }, // Stage
+  ];
+  ws['!rows'] = [{ hpt: 28 }];
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },
+    { s: { r: headerRow - 1, c: 0 }, e: { r: headerRow - 1, c: 6 } },
+  ];
+  ws['!freeze'] = { ySplit: headerRow + 1, xSplit: 0 };
+
+  return ws;
+};
+
+const exportSavingsToExcel = ({ profile, vsFirst, vsBudget, filename }) => {
+  try {
+    const year = new Date().getFullYear();
+    const wb = XLSX.utils.book_new();
+    if (profile?.name) wb.Props = { Title: 'Savings Report', Author: profile.name, CreatedDate: new Date() };
+
+    XLSX.utils.book_append_sheet(wb, buildSavingsSheet(profile, 'vsFirst',  vsFirst,  year), 'vs First Offer');
+    XLSX.utils.book_append_sheet(wb, buildSavingsSheet(profile, 'vsBudget', vsBudget, year), 'vs Budget');
+
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || `savings-${todayISO()}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+  } catch (e) {
+    console.error('Savings export failed', e);
+    alert('Could not export Excel file: ' + (e.message || e));
+  }
+};
+
+export { exportSavingsToExcel, exportWorkLogToExcel };

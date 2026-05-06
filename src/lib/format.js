@@ -113,6 +113,55 @@ export const hexToRgba = (hex, alpha = 1) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+// ─── Derived savings (from tender offers + budget) ──────────────
+// Two complementary calculations per tender:
+//   vsFirst  = first_offer  − final_offer   (what negotiation extracted)
+//   vsBudget = budgeted_amount − final_offer (what we kept under plan)
+// Each entry below mirrors the legacy `savings` row shape (id/amount/
+// date/category/description/tenderRef) so existing chart/list code can
+// consume either source without branching.
+//
+// `mode` selects which calculation. Negative results are kept (over-budget
+// / over-first-offer) so the user can see exposure, not just wins; the UI
+// colors them red.
+export const deriveSavingsFromTenders = (tenders, mode = 'vsFirst') => {
+  const list = Array.isArray(tenders) ? tenders : [];
+  const out = [];
+  for (const t of list) {
+    const finalO = Number(t.finalOffer);
+    if (!Number.isFinite(finalO) || finalO <= 0) continue;
+    let amount;
+    if (mode === 'vsFirst') {
+      const firstO = Number(t.firstOffer);
+      if (!Number.isFinite(firstO) || firstO <= 0) continue;
+      amount = firstO - finalO;
+    } else {
+      const budget = Number(t.value);
+      if (!Number.isFinite(budget) || budget <= 0) continue;
+      amount = budget - finalO;
+    }
+    // Date: prefer the deadline (when the tender wrapped up); fall back
+    // to createdAt so it still lands somewhere on the timeline.
+    const date = (t.deadline || t.createdAt || todayISO()).slice(0, 10);
+    out.push({
+      id: `${t.id}:${mode}`,
+      tenderId: t.id,
+      tenderRef: t.reference || '',
+      tenderTitle: t.title,
+      stage: t.stage,
+      description: t.title,
+      category: t.reference || t.title,
+      amount,
+      date,
+      // Inputs preserved so the Excel export can render the full math row.
+      firstOffer: Number.isFinite(Number(t.firstOffer)) ? Number(t.firstOffer) : null,
+      finalOffer: finalO,
+      budget: Number.isFinite(Number(t.value)) ? Number(t.value) : null,
+    });
+  }
+  return out;
+};
+
 // ─── Tender / target math ────────────────────────────────────────
 export const computeTenderBudget = (tenders, year = null) => {
   const list = Array.isArray(tenders) ? tenders : [];
