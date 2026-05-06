@@ -58,7 +58,7 @@ export default function LoginView() {
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
         >
           <div className="flex flex-col items-center mb-6">
-            <img src={LOGO_FULL_DARK_BG} alt="Procura" style={{ height: 36, width: 'auto', marginBottom: 16 }} draggable={false} />
+            <img src={LOGO_FULL_DARK_BG} alt="ProcTrax" style={{ height: 36, width: 'auto', marginBottom: 16 }} draggable={false} />
             <h1 className="pd-display text-2xl font-medium">
               {mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}
             </h1>

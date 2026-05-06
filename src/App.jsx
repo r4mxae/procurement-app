@@ -666,7 +666,7 @@ function AuthedDashboard({ user }) {
         </button>
         <img
           src={isLightTheme(theme) ? LOGO_FULL_LIGHT_BG : LOGO_FULL_DARK_BG}
-          alt="Procura"
+          alt="ProcTrax"
           style={{ height: 28, width: 'auto', display: 'block' }}
           draggable={false}
         />
@@ -693,7 +693,7 @@ function AuthedDashboard({ user }) {
             <div className="flex flex-col items-center pt-7 pb-3 gap-3">
               <img
                 src={isLightTheme(theme) ? LOGO_ICON_LIGHT_BG : LOGO_ICON_DARK_BG}
-                alt="Procura"
+                alt="ProcTrax"
                 style={{ height: 36, width: 'auto', display: 'block' }}
                 draggable={false}
               />
@@ -710,7 +710,7 @@ function AuthedDashboard({ user }) {
             <div className="px-5 py-7 flex items-center justify-between gap-2">
               <img
                 src={isLightTheme(theme) ? LOGO_FULL_LIGHT_BG : LOGO_FULL_DARK_BG}
-                alt="Procura"
+                alt="ProcTrax"
                 style={{ height: 36, width: 'auto', display: 'block', flexShrink: 0 }}
                 draggable={false}
               />

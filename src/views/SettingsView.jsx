@@ -473,7 +473,7 @@ function SettingsView({ data, theme, setTheme, updateProfile, updateSettings, re
       </SettingsSection>
 
       <div className="text-center mt-8 text-xs" style={{ color: 'var(--text-faint)' }}>
-        Procura Workspace · Settings save automatically
+        ProcTrax Workspace · Settings save automatically
       </div>
     </div>
   );
